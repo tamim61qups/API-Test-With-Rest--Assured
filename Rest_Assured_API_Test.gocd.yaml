@@ -1,0 +1,91 @@
+format_version: 10
+pipelines:
+  Rest_Assured_API_Test:
+    group: My-Pipelines
+    label_template: ${COUNT}
+    lock_behavior: none
+    display_order: -1
+    materials:
+      git-e58c155:
+        git: https://github.com/tamim61qups/API-Test-With-Rest--Assured.git
+        shallow_clone: false
+        auto_update: true
+        branch: main
+    stages:
+    - Test:
+        fetch_materials: true
+        keep_artifacts: false
+        clean_workspace: false
+        approval:
+          type: success
+          allow_only_on_success: false
+        jobs:
+          API_Test:
+            timeout: 0
+            tasks:
+            - exec:
+                arguments:
+                - 'rest_assured_pipeline:'
+                - 'group:'
+                - API_Testing
+                - 'label_template:'
+                - ${COUNT}
+                - 'stages:'
+                - '-'
+                - 'stage:'
+                - Build_and_Test
+                - 'jobs:'
+                - '-'
+                - 'job:'
+                - Build
+                - 'tasks:'
+                - '-'
+                - 'exec:'
+                - 'command:'
+                - mvn
+                - 'arguments:'
+                - '[clean,'
+                - install]
+                - 'working_directory:'
+                - API-testing-with-Rest_Assured
+                - '-'
+                - 'job:'
+                - Run_Tests_With_Allure
+                - 'tasks:'
+                - '-'
+                - 'exec:'
+                - 'command:'
+                - mvn
+                - 'arguments:'
+                - '[test,'
+                - -Dallure.results.directory=target/allure-results]
+                - 'working_directory:'
+                - API-testing-with-Rest_Assured
+                - '-'
+                - 'exec:'
+                - 'command:'
+                - mvn
+                - 'arguments:'
+                - '[io.qameta.allure:allure-maven:report]'
+                - 'working_directory:'
+                - API-testing-with-Rest_Assured
+                - 'artifacts:'
+                - 'test:'
+                - 'destination:'
+                - allure-results
+                - 'source:'
+                - API-testing-with-Rest_Assured/target/allure-results
+                - 'build:'
+                - 'destination:'
+                - allure-report
+                - 'source:'
+                - API-testing-with-Rest_Assured/target/site/allure-maven-plugin
+                - 'tabs:'
+                - '-'
+                - 'name:'
+                - Allure
+                - Report
+                - 'path:'
+                - allure-report/index.html
+                command: 'pipelines:'
+                run_if: passed

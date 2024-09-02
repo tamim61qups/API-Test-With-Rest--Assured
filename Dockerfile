@@ -1,5 +1,10 @@
-# Use an official Maven image as a parent image with OpenJDK 21
-FROM maven:3.8.4-openjdk-21
+# Use an official OpenJDK 21 image as the base
+FROM openjdk:21
+
+# Install Maven
+RUN apt-get update && \
+    apt-get install -y maven && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /usr/src/app

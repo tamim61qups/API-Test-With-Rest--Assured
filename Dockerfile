@@ -1,5 +1,5 @@
-# Use an official OpenJDK 21 image as the base
-FROM openjdk:21
+# Use an official OpenJDK 21 slim image as the base
+FROM openjdk:21-slim
 
 # Install Maven
 RUN apt-get update && \

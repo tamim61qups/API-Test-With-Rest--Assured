@@ -1,13 +1,7 @@
 version: 2.1
 
-executors:
-  docker-executor:
-    docker:
-      - image: openjdk:21-jdk-slim
-
 jobs:
   build_docker_image:
-    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker:
@@ -20,7 +14,6 @@ jobs:
             docker build -t web_test_automation .
 
   run_tests_in_docker:
-    executor: docker-executor
     steps:
       - setup_remote_docker:
           version: 20.10.7
@@ -30,7 +23,7 @@ jobs:
           name: Run Tests in Docker Container
           command: |
             echo "Running tests inside Docker container..."
-            docker run --rm web_test_automation sh -c "mvn clean test"
+            docker run --rm web_test_automation
 
 workflows:
   version: 2

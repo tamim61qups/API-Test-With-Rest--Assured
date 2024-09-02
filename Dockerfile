@@ -4,6 +4,7 @@ FROM openjdk:21-slim
 # Install Maven
 RUN apt-get update && \
     apt-get install -y maven && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -18,5 +19,5 @@ RUN mvn dependency:resolve
 # Copy the rest of the application
 COPY . .
 
-# Start the Selenium Grid Hub and Node
+# Start the application
 CMD ["mvn", "clean", "test"]

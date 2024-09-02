@@ -1,22 +1,29 @@
-# Use an official OpenJDK 21 slim image as the base
-FROM openjdk:21-slim
+version: 2.1
 
-# Install Maven
-RUN apt-get update && \
-    apt-get install -y maven && \
-    rm -rf /var/lib/apt/lists/*
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/python:3.8  # You can replace this with a more suitable image for your needs
 
-# Set the working directory
-WORKDIR /usr/src/app
+jobs:
+  build:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.7
+          docker_layer_caching: true
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t api_test_automation .
+      - run:
+          name: Run Tests in Docker
+          command: |
+            docker run --rm -v "${CIRCLE_WORKING_DIRECTORY}/allure-results:/usr/src/app/allure-results" api_test_automation
 
-# Copy the pom.xml file and download dependencies
-COPY pom.xml .
-
-# Download dependencies
-RUN mvn dependency:resolve
-
-# Copy the rest of the application
-COPY . .
-
-# Start the Selenium Grid Hub and Node
-CMD ["mvn", "clean", "test"]
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build

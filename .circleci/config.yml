@@ -1,44 +1,66 @@
-pipeline:
-  agent: any
+version: 2.1
 
-  environment:
-    DOCKER_IMAGE: "api_test_automation"
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/openjdk:21
+    working_directory: ~/project
 
-  stages:
-    - stage: "Build Docker Image"
-      steps:
-        - echo: 'Building the Docker image...'
-        - script:
-            sh: "docker build -t ${DOCKER_IMAGE} ."
+jobs:
+  build:
+    executor: docker-executor
+    steps:
+      - checkout
 
-    - stage: "Run Tests in Docker"
-      steps:
-        - echo: 'Running tests inside Docker container...'
-        - script:
-            sh: "docker run --rm -v '${WORKSPACE}/allure-results:/usr/src/app/allure-results' ${DOCKER_IMAGE}"
+      - setup_remote_docker:
+          version: 20.10.7
+          docker_layer_caching: true
 
-  post:
-    always:
-      steps:
-        - echo: 'Cleaning up Docker resources...'
-        - script:
-            sh: "docker rmi ${DOCKER_IMAGE} || true"
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t api_test_automation .
 
-        - echo: 'Publishing Allure reports...'
-        - allure:
-            includeProperties: false
-            jdk: ''
-            results:
-              - path: "allure-results"
+      - run:
+          name: Save Docker Image
+          command: |
+            docker save api_test_automation > ~/project/api_test_automation.tar
+
+      - store_artifacts:
+          path: ~/project/api_test_automation.tar
+          destination: docker_image
+
+  test:
+    executor: docker-executor
+    steps:
+      - run:
+          name: Load Docker Image
+          command: |
+            docker load -i ~/project/api_test_automation.tar
+
+      - run:
+          name: Run Tests in Docker
+          command: |
+            docker run --rm -v ${PWD}/allure-results:/usr/src/app/allure-results api_test_automation
+
+      - run:
+          name: Save Allure Results
+          command: |
+            mkdir -p ~/test-results && cp -r allure-results/* ~/test-results/
+
+      - store_artifacts:
+          path: ~/test-results
+          destination: allure-results
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - approval:
+      - hold_for_approval:
           type: approval
           requires:
             - build
       - test:
           requires:
-            - approval
+            - hold_for_approval

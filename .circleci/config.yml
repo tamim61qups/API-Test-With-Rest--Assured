@@ -3,8 +3,7 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: docker:20.10.7  # Use Docker image with Docker installed
-    working_directory: ~/project
+      - image: circleci/python:3.8  # You can replace this with a more suitable image for your needs
 
 jobs:
   build:
@@ -17,11 +16,11 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t my_maven_app .
+            docker build -t api_test_automation .
       - run:
-          name: Run Tests
+          name: Run Tests in Docker
           command: |
-            docker run --rm my_maven_app
+            docker run --rm -v "${CIRCLE_WORKING_DIRECTORY}/allure-results:/usr/src/app/allure-results" api_test_automation
 
 workflows:
   version: 2

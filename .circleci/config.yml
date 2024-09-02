@@ -30,3 +30,15 @@ pipeline:
             jdk: ''
             results:
               - path: "allure-results"
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - approval:
+          type: approval
+          requires:
+            - build
+      - test:
+          requires:
+            - approval

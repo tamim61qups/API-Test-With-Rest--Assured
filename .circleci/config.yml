@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: circleci/openjdk:21
+      - image: docker:20.10.7  # Use Docker image with Docker installed
     working_directory: ~/project
 
 jobs:
@@ -11,56 +11,20 @@ jobs:
     executor: docker-executor
     steps:
       - checkout
-
       - setup_remote_docker:
           version: 20.10.7
           docker_layer_caching: true
-
       - run:
           name: Build Docker Image
           command: |
-            docker build -t api_test_automation .
-
+            docker build -t my_maven_app .
       - run:
-          name: Save Docker Image
+          name: Run Tests
           command: |
-            docker save api_test_automation > ~/project/api_test_automation.tar
-
-      - store_artifacts:
-          path: ~/project/api_test_automation.tar
-          destination: docker_image
-
-  test:
-    executor: docker-executor
-    steps:
-      - run:
-          name: Load Docker Image
-          command: |
-            docker load -i ~/project/api_test_automation.tar
-
-      - run:
-          name: Run Tests in Docker
-          command: |
-            docker run --rm -v ${PWD}/allure-results:/usr/src/app/allure-results api_test_automation
-
-      - run:
-          name: Save Allure Results
-          command: |
-            mkdir -p ~/test-results && cp -r allure-results/* ~/test-results/
-
-      - store_artifacts:
-          path: ~/test-results
-          destination: allure-results
+            docker run --rm my_maven_app
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - hold_for_approval:
-          type: approval
-          requires:
-            - build
-      - test:
-          requires:
-            - hold_for_approval

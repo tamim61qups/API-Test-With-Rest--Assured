@@ -10,13 +10,7 @@ jobs:
   test:
     executor: java-executor
     steps:
-      - checkout
-
-      - run:
-          name: Set up Maven cache
-          command: |
-            mkdir -p ~/.m2
-            echo '<settings><profiles><profile><id>no-snapshot-updates</id><activation><activeByDefault>true</activeByDefault></activation><repositories><repository><id>central</id><url>https://repo.maven.apache.org/maven2</url><snapshots><enabled>false</enabled></snapshots></repository></repositories></profile></profiles></settings>' > ~/.m2/settings.xml
+      - checkout  # Check out the repository code
 
       - restore_cache:
           keys:

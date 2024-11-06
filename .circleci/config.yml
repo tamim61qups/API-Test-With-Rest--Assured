@@ -3,7 +3,7 @@ version: 2.1
 executors:
   maven-executor:
     docker:
-      - image: circleci/openjdk:21-jdk  # Use JDK 21
+      - image: cimg/openjdk:21.0  # Updated to use cimg image with JDK 21
     working_directory: ~/repo
 
 jobs:
